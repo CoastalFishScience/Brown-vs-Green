@@ -1,4 +1,4 @@
-# Brown, Green, and Everything in Between
+# Brown, Green, and Everything in Between: Seasonality drives green and brown energy pathways in food webs across an ecosystem gradient
 
 ## Abstract
 

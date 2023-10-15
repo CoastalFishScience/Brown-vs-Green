@@ -45,25 +45,10 @@ Corresponding Author: James W. Sturges; [jstur015@fiu.edu](mailto:jstur015@fiu.e
 - Stable isotopes
 - Resource use
 
-## Installation
-
-This section is not applicable to the research project. Please refer to the main body for information related to the research findings.
-
-## Usage
-
-This section is not applicable to the research project. Please refer to the main body for information related to the research findings.
-
-## Contributing
-
-This section is not applicable to the research project. Please refer to the main body for information related to the research findings.
-
-## License
-
-This project is not software; hence, it doesn't fall under a specific license.
 
 ## Acknowledgments
 
-Include any acknowledgments or credits for tools, datasets, or support received during the research.
+We thank our collaborators at Everglades National Park for their continued support of our research. Funding for this project was supported by the National Science Foundation through the Florida Coastal Everglades Long-Term Ecological Research (FCE-LTER) program under grant No. DEB-1832229. The authors declare no conflict of interest. This is contribution #X from the Coastline and Oceans Division in the Institute of Environment at Florida International University.
 
 ---
 

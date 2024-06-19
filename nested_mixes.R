@@ -224,7 +224,7 @@ write.csv(RB10mix,"data/Consumers/nested/RB10mix.csv",row.names = F)
 mix <- load_mix_data(filename="data/Consumers/RB10mix.csv",
                      iso_names=c("d13C","d15N","d34S"),
                      factors=c('hydroseason','common_name'),
-                     fac_random=c(F,F),
+                     fac_random=c(F,T),
                      fac_nested=c(F,T),
                      cont_effects=NULL)
 
@@ -239,7 +239,7 @@ discr <- load_discr_data(file("data/TEF/FCE_TEF_RB10.csv"), mix)
 plot_data(filename="figures/isospace/nested/RB10_isospace_plot", plot_save_pdf=T, plot_save_png=T, mix,source,discr)
 
 model_filename <- "data/Consumers/nested/RB10_mix.txt"
-write_JAGS_model(model_filename, resid_err=F, process_err=T, mix, source)
+write_JAGS_model(model_filename, resid_err=T, process_err=T, mix, source)
 
 
 #run a test model to make sure it works
@@ -271,6 +271,7 @@ jags.RB10 <- run_model(run="normal", mix, source, discr, model_filename,
                           plot_pairs_save_png = F,
                           plot_xy_save_png = F)
 
+saveRDS(jags.RB10, 'data/JAGS_Output/RB10/nested/RB10.RDS')
  
 output_JAGS(jags.RB10, mix, source, output_jags.RB10)
 

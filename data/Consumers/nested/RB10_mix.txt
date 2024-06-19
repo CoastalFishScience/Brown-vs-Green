@@ -1,11 +1,11 @@
 # source$data_type: means
 # source$by_factor: NA
-# random effects: 0
-# fixed effects: 2
+# random effects: 1
+# fixed effects: 1
 # nested factors: FALSE TRUE
 # factors: hydroseason common_name
 # continuous effects: 0
-# error structure: Process only (MixSIR, for N = 1)
+# error structure: Residual * Process
 # source$conc_dep: TRUE
 
 model{
@@ -33,13 +33,14 @@ model{
     }
   }
 
-  # draw the fac2 specific ILR terms (fixed effect)
-  for(src in 1:(n.sources-1)){
-    ilr.fac2[1,src] <- 0;
-    for(f2 in 2:factor2_levels){
-      ilr.fac2[f2,src] ~ dnorm(0,1);
-    }
-  }
+   fac2.sig ~ dunif(0,20);
+   fac2.invSig2 <- 1/(fac2.sig*fac2.sig);
+   # draw the fac2-specific ILR terms (random effect)
+   for(f2 in 1:factor2_levels){
+      for(src in 1:(n.sources-1)){
+          ilr.fac2[f2,src] ~ dnorm(0,fac2.invSig2);
+      }
+   }
 
    # DON'T generate individual deviates from the global/region/pack mean (but keep same model structure)
    for(i in 1:N) {
@@ -69,6 +70,20 @@ model{
       }
    }
 
+   # Transform ilr.fac1 into p.fac1 (fac1 fixed, not nested within fac2)
+   for(f1 in 1:factor1_levels) {
+      for(src in 1:(n.sources-1)) {
+        ilr.fac1.tot[f1,src] <- ilr.global[src] + ilr.fac1[f1,src];
+        cross.fac1[f1,,src] <- (e[,src]^ilr.fac1.tot[f1,src])/sum(e[,src]^ilr.fac1.tot[f1,src]);
+      }
+      for(src in 1:n.sources) {
+        tmp.p.fac1[f1,src] <- prod(cross.fac1[f1,src,]);
+      }
+      for(src in 1:n.sources){
+        p.fac1[f1,src] <- tmp.p.fac1[f1,src]/sum(tmp.p.fac1[f1,]);
+      }
+   }
+
 
    # for each isotope and population, calculate the predicted mixtures
    for(iso in 1:n.iso) {
@@ -78,17 +93,34 @@ model{
       }
    }
 
-
-  # calculate mix variance and likelihood
-  for(i in 1:N){
+    # Multiplicative residual error
     for(iso in 1:n.iso){
-
-      process.var[iso,i] <- inprod(1/src_tau[,iso],p2[i,]) + inprod(frac_sig2[,iso],p2[i,]);
-      mix.prcsn[iso,i] <- 1/process.var[iso,i];
-      X_iso[i,iso] ~ dnorm(mix.mu[iso,i], mix.prcsn[iso,i]);
-      loglik_mat[i,iso] <- logdensity.norm(X_iso[i,iso], mix.mu[iso,i], mix.prcsn[iso,i]);
+      resid.prop[iso] ~ dunif(0,20);
     }
-    loglik[i] <- sum(loglik_mat[i,])
-  }
-}  # end model
+
+
+   # Calculate process variance for each isotope and population
+   for(iso in 1:n.iso) {
+      for(i in 1:N) {
+
+         process.var[iso,i] <- inprod(1/src_tau[,iso],p2[i,]) + inprod(frac_sig2[,iso],p2[i,]);
+      }
+   }
+
+   # Construct Sigma, the mixture precision matrix
+   for(ind in 1:N){
+      for(i in 1:n.iso){
+        for(j in 1:n.iso){
+          Sigma.ind[ind,i,j] <- equals(i,j)/(process.var[i,ind]*resid.prop[i]);
+        }
+      }
+   }
+
+   # Likelihood
+   for(i in 1:N) {
+
+     X_iso[i,] ~ dmnorm(mix.mu[,i], Sigma.ind[i,,]);
+     loglik[i] <- logdensity.mnorm(X_iso[i,], mix.mu[,i], Sigma.ind[i,,]);
+   }
+} # end model
 
